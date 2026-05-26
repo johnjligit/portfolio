@@ -648,58 +648,67 @@ to  {transform:rotate(-590.000deg);}}
 
     <script>
 (function() {
-  var form = document.getElementById('contact-form');
-  if (!form) return;
-
-  function showToast() {
+  function initForm() {
+    var form = document.getElementById('contact-form');
+    var btn  = document.getElementById('contact-btn');
     var toast = document.getElementById('contact-toast');
-    toast.style.cssText = [
-      'position:fixed',
-      'bottom:2.5rem',
-      'left:50%',
-      'transform:translateX(-50%)',
-      'background:#111827',
-      'color:#fff',
-      'padding:1rem 2.5rem',
-      'font-family:Space Grotesk,sans-serif',
-      'font-size:0.9rem',
-      'font-weight:600',
-      'z-index:9999',
-      'box-shadow:0 8px 32px rgba(0,0,0,0.25)',
-      'border-left:4px solid #2980b9',
-      'white-space:nowrap',
-      'opacity:1',
-      'transition:opacity 0.4s ease',
-      'display:block'
-    ].join(';');
-    setTimeout(function() {
-      toast.style.opacity = '0';
+    if (!form || !btn || !toast) return;
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      // 1. Capture data BEFORE reset
+      var data = new FormData(form);
+
+      // 2. Show toast INSTANTLY
+      toast.style.position   = 'fixed';
+      toast.style.bottom     = '2.5rem';
+      toast.style.left       = '50%';
+      toast.style.transform  = 'translateX(-50%)';
+      toast.style.background = '#111827';
+      toast.style.color      = '#fff';
+      toast.style.padding    = '1rem 2.5rem';
+      toast.style.fontFamily = 'Space Grotesk, sans-serif';
+      toast.style.fontSize   = '0.9rem';
+      toast.style.fontWeight = '600';
+      toast.style.zIndex     = '99999';
+      toast.style.boxShadow  = '0 8px 32px rgba(0,0,0,0.25)';
+      toast.style.borderLeft = '4px solid #2980b9';
+      toast.style.whiteSpace = 'nowrap';
+      toast.style.opacity    = '1';
+      toast.style.display    = 'block';
+      toast.style.transition = 'opacity 0.4s ease';
+
+      // 3. Reset form + button
+      form.reset();
+      btn.textContent = 'Send Message →';
+
+      // 4. Auto-hide after 4s
       setTimeout(function() {
-        toast.style.display = 'none';
-        toast.style.opacity = '1';
-      }, 400);
-    }, 4000);
+        toast.style.opacity = '0';
+        setTimeout(function() {
+          toast.style.display  = 'none';
+          toast.style.opacity  = '1';
+        }, 400);
+      }, 4000);
+
+      // 5. Fire to Formspree in background
+      fetch('https://formspree.io/f/xnjrglwl', {
+        method: 'POST',
+        body: data,
+        headers: { 'Accept': 'application/json' }
+      }).catch(function() {
+        console.log('Formspree network error');
+      });
+    });
   }
 
-  form.addEventListener('submit', function(e) {
-    e.preventDefault();
-    var btn = document.getElementById('contact-btn');
-
-    // Show toast & reset form IMMEDIATELY on click
-    showToast();
-    form.reset();
-    btn.textContent = 'Send Message →';
-
-    // Fire and forget — send in background
-    fetch('https://formspree.io/f/xnjrglwl', {
-      method: 'POST',
-      body: new FormData(form),
-      headers: { 'Accept': 'application/json' }
-    }).catch(function() {
-      // Silent fail — user already saw success toast
-      console.log('Formspree network error');
-    });
-  });
+  // Run immediately if DOM ready, otherwise wait
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initForm);
+  } else {
+    initForm();
+  }
 })();
 </script>
 
@@ -708,7 +717,7 @@ to  {transform:rotate(-590.000deg);}}
 
 <footer style="position:relative;">
   John Li &nbsp;&middot;&nbsp; Mechanical Engineer &nbsp;&middot;&nbsp; Stony Brook &rsquo;26 &nbsp;&middot;&nbsp; Carnegie Mellon MS &rsquo;27 &nbsp;&middot;&nbsp; John.j.li@outlook.com
-  <span style="position:absolute;right:3.5rem;top:50%;transform:translateY(-50%);font-size:0.7rem;color:rgba(255,255,255,0.2);letter-spacing:0.08em;">v1.1</span>
+  <span style="position:absolute;right:3.5rem;top:50%;transform:translateY(-50%);font-size:0.7rem;color:rgba(255,255,255,0.2);letter-spacing:0.08em;">v1.3</span>
 </footer>
 <div class="modal-overlay" id="modal-overlay" onclick="closeModalOnBg(event)"><div class="modal" id="modal-content"></div></div>
 
