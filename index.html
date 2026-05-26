@@ -644,76 +644,86 @@ to  {transform:rotate(-590.000deg);}}
     </form>
 
     <!-- Success popup -->
-    <div id="contact-toast" style="
-      display:none;position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);
-      background:#111827;color:#fff;padding:1rem 2rem;
-      font-family:'Space Grotesk',sans-serif;font-size:0.88rem;font-weight:500;
-      letter-spacing:0.04em;z-index:999;
-      box-shadow:0 8px 32px rgba(0,0,0,0.2);
-      border-left:4px solid #2980b9;
-      animation:toastIn 0.3s ease;
-      white-space:nowrap;
-    ">
-      &#10003;&nbsp; Message sent &mdash; I&rsquo;ll be in touch soon!
-    </div>
-
-    <style>
-      @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(12px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
-      @keyframes toastOut{from{opacity:1;transform:translateX(-50%) translateY(0);}to{opacity:0;transform:translateX(-50%) translateY(12px);}}
-    </style>
+    <div id="contact-toast" style="display:none;">&#10003;&nbsp; Message sent &mdash; I'll be in touch soon!</div>
 
     <script>
-    document.getElementById('contact-form').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      var btn = document.getElementById('contact-btn');
-      var toast = document.getElementById('contact-toast');
-      var form = this;
+(function() {
+  var form = document.getElementById('contact-form');
+  if (!form) return;
 
-      // Loading state
-      btn.textContent = 'Sending...';
-      btn.disabled = true;
-      btn.style.opacity = '0.7';
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
 
-      try {
-        var response = await fetch('https://formspree.io/f/xnjrglwl', {
-          method: 'POST',
-          body: new FormData(form),
-          headers: { 'Accept': 'application/json' }
-        });
+    var btn = document.getElementById('contact-btn');
+    var toast = document.getElementById('contact-toast');
 
-        if (response.ok) {
-          // Success
-          form.reset();
-          btn.textContent = 'Send Message →';
-          btn.disabled = false;
-          btn.style.opacity = '1';
+    // Button loading state
+    btn.textContent = 'Sending...';
+    btn.disabled = true;
+    btn.style.background = '#6b7280';
 
-          // Show toast
-          toast.style.display = 'block';
-          toast.style.animation = 'toastIn 0.3s ease';
+    fetch('https://formspree.io/f/xnjrglwl', {
+      method: 'POST',
+      body: new FormData(form),
+      headers: { 'Accept': 'application/json' }
+    })
+    .then(function(res) {
+      if (res.ok) {
+        form.reset();
+        btn.textContent = 'Send Message →';
+        btn.disabled = false;
+        btn.style.background = '';
 
-          // Hide after 4s
+        // Show toast
+        toast.style.cssText = [
+          'position:fixed',
+          'bottom:2.5rem',
+          'left:50%',
+          'transform:translateX(-50%)',
+          'background:#111827',
+          'color:#fff',
+          'padding:1rem 2.5rem',
+          'font-family:Space Grotesk,sans-serif',
+          'font-size:0.9rem',
+          'font-weight:600',
+          'z-index:9999',
+          'box-shadow:0 8px 32px rgba(0,0,0,0.25)',
+          'border-left:4px solid #2980b9',
+          'white-space:nowrap',
+          'opacity:1',
+          'transition:opacity 0.4s ease',
+          'display:block'
+        ].join(';');
+
+        setTimeout(function() {
+          toast.style.opacity = '0';
           setTimeout(function() {
-            toast.style.animation = 'toastOut 0.3s ease forwards';
-            setTimeout(function() { toast.style.display = 'none'; }, 300);
-          }, 4000);
+            toast.style.display = 'none';
+            toast.style.opacity = '1';
+          }, 400);
+        }, 4000);
 
-        } else {
-          var data = await response.json();
-          var msg = (data && data.errors) ? data.errors.map(function(e){return e.message;}).join(', ') : 'Something went wrong. Please email me directly.';
+      } else {
+        return res.json().then(function(data) {
           btn.textContent = 'Try Again';
           btn.disabled = false;
-          btn.style.opacity = '1';
+          btn.style.background = '';
+          var msg = (data && data.errors)
+            ? data.errors.map(function(x){return x.message;}).join(', ')
+            : 'Something went wrong — please email me directly.';
           alert(msg);
-        }
-      } catch(err) {
-        btn.textContent = 'Try Again';
-        btn.disabled = false;
-        btn.style.opacity = '1';
-        alert('Network error. Please email me at John.j.li@outlook.com');
+        });
       }
+    })
+    .catch(function() {
+      btn.textContent = 'Try Again';
+      btn.disabled = false;
+      btn.style.background = '';
+      alert('Network error — please email me at John.j.li@outlook.com');
     });
-    </script>
+  });
+})();
+</script>
 
   </div>
 </section>
